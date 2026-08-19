@@ -7,10 +7,9 @@
       },
       "manual": {
         "title": "Select Matter endpoint",
-        "description": "More than one Occupancy Sensing endpoint was found. The suggested values below are a best-effort guess, not a confirmed match. Choose the correct node and endpoint manually.\n\nSuggested: node {suggested_node_id}, endpoint {suggested_endpoint_id}\n\nFound candidates: {candidates}",
+        "description": "More than one Occupancy Sensing endpoint was found. Select the most likely candidate below. You can still adjust node and endpoint later in the integration options if needed.\n\nSuggested: node {suggested_node_id}, endpoint {suggested_endpoint_id}\n\nFound candidates: {candidates}",
         "data": {
-          "node_id": "Matter node ID",
-          "endpoint_id": "Matter endpoint ID"
+          "candidate": "Detected Matter candidate"
         }
       }
     },
@@ -20,6 +19,7 @@
       "no_candidates": "No Matter node with Occupancy Sensing support was found."
     },
     "error": {
+      "invalid_candidate": "The selected candidate is no longer available.",
       "invalid_override": "The selected node and endpoint do not match any available Occupancy Sensing candidate."
     }
   },

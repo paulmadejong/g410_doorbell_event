@@ -16,6 +16,7 @@ from .discovery import iter_candidates, rank_candidates, resolve_candidate, summ
 from .models import DoorbellCandidate
 
 _LOGGER = logging.getLogger(__name__)
+CONF_CANDIDATE = "candidate"
 
 
 class G410DoorbellEventConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -32,6 +33,21 @@ class G410DoorbellEventConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         self._candidates: list[DoorbellCandidate] = []
+
+    @staticmethod
+    def _candidate_value(candidate: DoorbellCandidate) -> str:
+        """Serialize a candidate for a select field."""
+
+        return f"{candidate.node_id}:{candidate.endpoint_id}"
+
+    @classmethod
+    def _candidate_options(cls, candidates: list[DoorbellCandidate]) -> dict[str, str]:
+        """Build human-readable select options for candidate choice."""
+
+        return {
+            cls._candidate_value(candidate): summarize_candidate(candidate)
+            for candidate in candidates
+        }
 
     @staticmethod
     def _has_ambiguity(candidates: list[DoorbellCandidate]) -> bool:
@@ -95,33 +111,48 @@ class G410DoorbellEventConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: dict[str, Any] | None = None,
     ) -> FlowResult:
-        """Allow manual endpoint selection when auto-detection is ambiguous."""
+        """Allow candidate selection when auto-detection is ambiguous."""
 
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            status, candidate, _ = resolve_candidate(
-                self._candidates,
-                preferred_node_id=user_input[CONF_NODE_ID],
-                preferred_endpoint_id=user_input[CONF_ENDPOINT_ID],
+            selected_value = user_input[CONF_CANDIDATE]
+            selected_candidate = next(
+                (
+                    candidate
+                    for candidate in self._candidates
+                    if self._candidate_value(candidate) == selected_value
+                ),
+                None,
             )
-            if status == "ready" and candidate is not None:
-                await self.async_set_unique_id(DOMAIN)
-                self._abort_if_unique_id_configured()
-                return self.async_create_entry(
-                    title=NAME,
-                    data={
-                        CONF_NODE_ID: candidate.node_id,
-                        CONF_ENDPOINT_ID: candidate.endpoint_id,
-                    },
+            if selected_candidate is None:
+                errors["base"] = "invalid_candidate"
+            else:
+                status, candidate, _ = resolve_candidate(
+                    self._candidates,
+                    preferred_node_id=selected_candidate.node_id,
+                    preferred_endpoint_id=selected_candidate.endpoint_id,
                 )
-            errors["base"] = "invalid_override"
+                if status == "ready" and candidate is not None:
+                    await self.async_set_unique_id(DOMAIN)
+                    self._abort_if_unique_id_configured()
+                    return self.async_create_entry(
+                        title=NAME,
+                        data={
+                            CONF_NODE_ID: candidate.node_id,
+                            CONF_ENDPOINT_ID: candidate.endpoint_id,
+                        },
+                    )
+                errors["base"] = "invalid_candidate"
 
         suggested = self._candidates[0]
+        options = self._candidate_options(self._candidates)
         schema = vol.Schema(
             {
-                vol.Required(CONF_NODE_ID, default=suggested.node_id): vol.Coerce(int),
-                vol.Required(CONF_ENDPOINT_ID, default=suggested.endpoint_id): vol.Coerce(int),
+                vol.Required(
+                    CONF_CANDIDATE,
+                    default=self._candidate_value(suggested),
+                ): vol.In(options),
             }
         )
         candidate_list = " | ".join(summarize_candidate(item) for item in self._candidates)

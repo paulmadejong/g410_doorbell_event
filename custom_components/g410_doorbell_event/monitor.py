@@ -108,6 +108,7 @@ class DoorbellMonitor:
                 self.state.detail = (
                     "No available Matter node with Occupancy Sensing support was found."
                 )
+                self.state.last_occupied = None
                 _LOGGER.warning("%s", self.state.detail)
                 return
 
@@ -118,6 +119,7 @@ class DoorbellMonitor:
                     "Configured node/endpoint override does not match any available "
                     "Occupancy Sensing endpoint."
                 )
+                self.state.last_occupied = None
                 _LOGGER.error(
                     "%s Candidates: %s",
                     self.state.detail,
@@ -132,6 +134,7 @@ class DoorbellMonitor:
                     "Multiple Occupancy Sensing endpoints matched; "
                     "manual endpoint selection is required."
                 )
+                self.state.last_occupied = None
                 _LOGGER.error(
                     "%s Candidates: %s",
                     self.state.detail,
@@ -145,6 +148,7 @@ class DoorbellMonitor:
             self.state.detail = summarize_candidate(candidate)
 
             if previous != candidate:
+                self.state.last_occupied = None
                 _LOGGER.info(
                     "Resolved Aqara G410 Matter endpoint after %s: %s",
                     reason,
@@ -178,7 +182,10 @@ class DoorbellMonitor:
             return
 
         payload = data.data or {}
-        if not extract_occupied_flag(payload):
+        occupied = extract_occupied_flag(payload)
+
+        if occupied is not True:
+            self.state.last_occupied = False
             _LOGGER.debug(
                 "Ignoring occupancy event without occupied=true for node=%s endpoint=%s payload=%s",
                 data.node_id,
@@ -186,6 +193,27 @@ class DoorbellMonitor:
                 payload,
             )
             return
+
+        if self.state.last_occupied is None:
+            self.state.last_occupied = True
+            _LOGGER.debug(
+                "Ignoring initial occupied=true event for node=%s endpoint=%s until a "
+                "clear false->true transition is observed",
+                data.node_id,
+                data.endpoint_id,
+            )
+            return
+
+        if self.state.last_occupied is True:
+            _LOGGER.debug(
+                "Ignoring repeated occupied=true event for node=%s endpoint=%s payload=%s",
+                data.node_id,
+                data.endpoint_id,
+                payload,
+            )
+            return
+
+        self.state.last_occupied = True
 
         _LOGGER.info(
             "Doorbell event detected on node=%s endpoint=%s event_id=%s event_number=%s",

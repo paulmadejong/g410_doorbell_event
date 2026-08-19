@@ -39,35 +39,59 @@ def _make_monitor() -> tuple[DoorbellMonitor, list[tuple[str, dict]]]:
         detail="test",
     )
     monitor._listeners = []
+    monitor._unsubscribers = []
     return monitor, bus_events
 
 
-def test_monitor_handles_nested_occupancy_payload_and_fires_legacy_event() -> None:
-    """Nested occupancyChanged payloads should still emit the ring event."""
+def test_monitor_requires_false_to_true_transition_before_firing_event() -> None:
+    """Only a real false->true occupancy transition should emit a ring event."""
 
     monitor, bus_events = _make_monitor()
     listener_calls: list[dict] = []
     monitor.async_add_ring_listener(listener_calls.append)
 
-    payload = {"occupancy": {"occupied": True}}
-    data = SimpleNamespace(
+    initial_true = SimpleNamespace(
         node_id=3,
         endpoint_id=2,
         cluster_id=0x0406,
-        data=payload,
+        data={"occupancy": {"occupied": True}},
         event_id=1,
         event_number=2,
         priority=3,
         timestamp=4,
         timestamp_type="system",
     )
+    false_data = SimpleNamespace(
+        node_id=3,
+        endpoint_id=2,
+        cluster_id=0x0406,
+        data={"occupancy": {"occupied": False}},
+        event_id=2,
+        event_number=3,
+        priority=3,
+        timestamp=5,
+        timestamp_type="system",
+    )
+    true_data = SimpleNamespace(
+        node_id=3,
+        endpoint_id=2,
+        cluster_id=0x0406,
+        data={"occupancy": {"occupied": True}},
+        event_id=3,
+        event_number=4,
+        priority=3,
+        timestamp=6,
+        timestamp_type="system",
+    )
 
-    monitor._handle_node_event("node_event", data)
+    monitor._handle_node_event("node_event", initial_true)
+    monitor._handle_node_event("node_event", false_data)
+    monitor._handle_node_event("node_event", true_data)
 
     assert len(listener_calls) == 1
     assert listener_calls[0]["event_type"] == "ring"
     assert bus_events[0][0] == "g410_doorbell_event"
-    assert bus_events[0][1]["raw_data"] == payload
+    assert bus_events[0][1]["raw_data"] == {"occupancy": {"occupied": True}}
 
 
 def test_monitor_ignores_non_occupied_event() -> None:
@@ -93,3 +117,41 @@ def test_monitor_ignores_non_occupied_event() -> None:
 
     assert listener_calls == []
     assert bus_events == []
+
+
+def test_monitor_ignores_repeated_true_without_new_false_transition() -> None:
+    """Repeated occupied=true events should not create duplicate rings."""
+
+    monitor, bus_events = _make_monitor()
+    listener_calls: list[dict] = []
+    monitor.async_add_ring_listener(listener_calls.append)
+
+    false_data = SimpleNamespace(
+        node_id=3,
+        endpoint_id=2,
+        cluster_id=0x0406,
+        data={"occupancy": {"occupied": False}},
+        event_id=1,
+        event_number=2,
+        priority=3,
+        timestamp=4,
+        timestamp_type="system",
+    )
+    true_data = SimpleNamespace(
+        node_id=3,
+        endpoint_id=2,
+        cluster_id=0x0406,
+        data={"occupancy": {"occupied": True}},
+        event_id=2,
+        event_number=3,
+        priority=3,
+        timestamp=5,
+        timestamp_type="system",
+    )
+
+    monitor._handle_node_event("node_event", false_data)
+    monitor._handle_node_event("node_event", true_data)
+    monitor._handle_node_event("node_event", true_data)
+
+    assert len(listener_calls) == 1
+    assert len(bus_events) == 1

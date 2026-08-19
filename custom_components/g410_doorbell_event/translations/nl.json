@@ -7,10 +7,9 @@
       },
       "manual": {
         "title": "Matter-endpoint kiezen",
-        "description": "Er zijn meerdere Occupancy Sensing-endpoints gevonden. De voorgestelde waarden hieronder zijn een best effort gok, geen bevestigde match. Kies handmatig de juiste node en endpoint.\n\nVoorgesteld: node {suggested_node_id}, endpoint {suggested_endpoint_id}\n\nGevonden kandidaten: {candidates}",
+        "description": "Er zijn meerdere Occupancy Sensing-endpoints gevonden. Kies hieronder de meest waarschijnlijke kandidaat. Je kunt node en endpoint later desgewenst nog aanpassen via de integratie-opties.\n\nVoorgesteld: node {suggested_node_id}, endpoint {suggested_endpoint_id}\n\nGevonden kandidaten: {candidates}",
         "data": {
-          "node_id": "Matter node ID",
-          "endpoint_id": "Matter endpoint ID"
+          "candidate": "Gedetecteerde Matter-kandidaat"
         }
       }
     },
@@ -20,6 +19,7 @@
       "no_candidates": "Er is geen Matter-node met ondersteuning voor Occupancy Sensing gevonden."
     },
     "error": {
+      "invalid_candidate": "De gekozen kandidaat is niet langer beschikbaar.",
       "invalid_override": "De gekozen node en endpoint komen niet overeen met een beschikbare Occupancy Sensing-kandidaat."
     }
   },
