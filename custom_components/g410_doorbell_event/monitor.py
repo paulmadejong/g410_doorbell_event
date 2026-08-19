@@ -178,13 +178,41 @@ class DoorbellMonitor:
 
         del event
         candidate = self.state.candidate
+        _LOGGER.debug(
+            "Received Matter node event: status=%s candidate=%s data_node=%s data_endpoint=%s "
+            "data_cluster=%s payload=%s",
+            self.state.status,
+            summarize_candidate(candidate) if candidate is not None else None,
+            getattr(data, "node_id", None),
+            getattr(data, "endpoint_id", None),
+            getattr(data, "cluster_id", None),
+            getattr(data, "data", None),
+        )
         if candidate is None or self.state.status != "ready":
+            _LOGGER.debug(
+                "Ignoring Matter node event because monitor is not ready: status=%s candidate=%s",
+                self.state.status,
+                summarize_candidate(candidate) if candidate is not None else None,
+            )
             return
 
         if data.node_id != candidate.node_id or data.endpoint_id != candidate.endpoint_id:
+            _LOGGER.debug(
+                "Ignoring Matter node event due to node/endpoint mismatch: expected node=%s "
+                "endpoint=%s, got node=%s endpoint=%s",
+                candidate.node_id,
+                candidate.endpoint_id,
+                data.node_id,
+                data.endpoint_id,
+            )
             return
 
         if data.cluster_id != OCCUPANCY_SENSING_CLUSTER_ID:
+            _LOGGER.debug(
+                "Ignoring Matter node event due to cluster mismatch: expected=%s got=%s",
+                OCCUPANCY_SENSING_CLUSTER_ID,
+                data.cluster_id,
+            )
             return
 
         payload = data.data or {}
@@ -193,10 +221,12 @@ class DoorbellMonitor:
         if occupied is not True:
             self.state.last_occupied = False
             _LOGGER.debug(
-                "Ignoring occupancy event without occupied=true for node=%s endpoint=%s payload=%s",
+                "Ignoring occupancy event without occupied=true for node=%s endpoint=%s "
+                "payload=%s extracted_occupied=%s",
                 data.node_id,
                 data.endpoint_id,
                 payload,
+                occupied,
             )
             return
 
@@ -210,10 +240,12 @@ class DoorbellMonitor:
                 self.state.last_occupied = True
                 _LOGGER.debug(
                     "Ignoring initial occupied=true event for node=%s endpoint=%s during "
-                    "the %.1fs startup suppression window",
+                    "the %.1fs startup suppression window (armed_at=%s now=%s)",
                     data.node_id,
                     data.endpoint_id,
                     INITIAL_OCCUPIED_SUPPRESSION_SECONDS,
+                    armed_at,
+                    now_monotonic,
                 )
                 return
 

@@ -30,6 +30,8 @@ def extract_occupied_flag(payload: Any) -> bool:
         return bool_from_value(payload.get("occupied"))
 
     occupancy = payload.get("occupancy")
+    if isinstance(occupancy, bool | int | str):
+        return bool_from_value(occupancy)
     if isinstance(occupancy, dict):
         return bool_from_value(occupancy.get("occupied"))
 

@@ -74,6 +74,8 @@ def test_extract_occupied_flag_supports_flat_and_nested_payloads() -> None:
     """Matter payload parsing should support both known occupancyChanged shapes."""
 
     assert extract_occupied_flag({"occupied": True}) is True
+    assert extract_occupied_flag({"occupancy": 1}) is True
+    assert extract_occupied_flag({"occupancy": 0}) is False
     assert extract_occupied_flag({"occupancy": {"occupied": True}}) is True
     assert extract_occupied_flag({"occupancy": {"occupied": False}}) is False
     assert extract_occupied_flag({"unexpected": "value"}) is False
