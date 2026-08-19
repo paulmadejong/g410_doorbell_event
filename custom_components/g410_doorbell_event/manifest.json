@@ -1,6 +1,6 @@
 {
   "domain": "g410_doorbell_event",
-  "name": "G410 Doorbell Event",
+  "name": "G410 Ring Event",
   "version": "0.1.0",
   "documentation": "https://github.com/paulmadejong/g410_doorbell_event#readme",
   "issue_tracker": "https://github.com/paulmadejong/g410_doorbell_event/issues",

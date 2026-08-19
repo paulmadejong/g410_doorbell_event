@@ -1,4 +1,4 @@
-"""G410 Doorbell Event integration."""
+"""G410 Ring Event integration."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import DOMAIN
+from .const import CONF_ENDPOINT_ID, CONF_NODE_ID, DOMAIN
 from .monitor import DoorbellMonitor
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,7 +36,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a config entry."""
 
     try:
-        monitor = DoorbellMonitor(hass)
+        monitor = DoorbellMonitor(
+            hass,
+            preferred_node_id=entry.options.get(CONF_NODE_ID, entry.data.get(CONF_NODE_ID)),
+            preferred_endpoint_id=entry.options.get(
+                CONF_ENDPOINT_ID,
+                entry.data.get(CONF_ENDPOINT_ID),
+            ),
+        )
     except Exception as err:  # noqa: BLE001
         raise ConfigEntryNotReady("Matter integration is not ready") from err
 
@@ -47,7 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][entry.entry_id] = RuntimeData(monitor=monitor)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    _LOGGER.info("Loaded G410 Doorbell Event integration for entry %s", entry.entry_id)
+    _LOGGER.info("Loaded G410 Ring Event integration for entry %s", entry.entry_id)
     return True
 
 

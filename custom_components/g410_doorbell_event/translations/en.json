@@ -2,15 +2,40 @@
   "config": {
     "step": {
       "user": {
-        "title": "G410 Doorbell Event",
+        "title": "G410 Ring Event",
         "description": "Auto-discovers the Aqara G410 endpoint from the existing Home Assistant Matter integration."
+      },
+      "manual": {
+        "title": "Select Matter endpoint",
+        "description": "More than one Occupancy Sensing endpoint was found. The suggested values below are a best-effort guess, not a confirmed match. Choose the correct node and endpoint manually.\n\nSuggested: node {suggested_node_id}, endpoint {suggested_endpoint_id}\n\nFound candidates: {candidates}",
+        "data": {
+          "node_id": "Matter node ID",
+          "endpoint_id": "Matter endpoint ID"
+        }
       }
     },
     "abort": {
-      "already_configured": "Only one G410 Doorbell Event integration can be configured.",
+      "already_configured": "Only one G410 Ring Event integration can be configured.",
       "matter_not_ready": "The Home Assistant Matter integration is not ready yet.",
-      "no_candidates": "No Matter node with Occupancy Sensing support was found.",
-      "ambiguous_candidates": "More than one candidate Occupancy Sensing endpoint was found."
+      "no_candidates": "No Matter node with Occupancy Sensing support was found."
+    },
+    "error": {
+      "invalid_override": "The selected node and endpoint do not match any available Occupancy Sensing candidate."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Adjust Matter endpoint",
+        "description": "Change the preferred Matter node and endpoint after setup.\n\nDetected candidates: {candidates}",
+        "data": {
+          "node_id": "Matter node ID",
+          "endpoint_id": "Matter endpoint ID"
+        }
+      }
+    },
+    "error": {
+      "invalid_override": "The selected node and endpoint do not match any available Occupancy Sensing candidate."
     }
   },
   "entity": {

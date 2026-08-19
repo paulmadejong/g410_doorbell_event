@@ -9,6 +9,7 @@ from custom_components.g410_doorbell_event.discovery import (
     bool_from_value,
     extract_occupied_flag,
     iter_candidates,
+    resolve_candidate,
     summarize_candidate,
 )
 
@@ -119,3 +120,82 @@ def test_summarize_candidate_includes_names_and_ids() -> None:
     assert "endpoint=3" in summary
     assert "G410" in summary
     assert "Occupancy" in summary
+
+
+def test_resolve_candidate_prefers_endpoint_two_tiebreaker() -> None:
+    """Endpoint 2 should win a same-score tie when present."""
+
+    endpoint_one = FakeEndpoint(
+        endpoint_id=1,
+        name="Occupancy One",
+        device_types=[OccupancySensor],
+        clusters={OCCUPANCY_SENSING_CLUSTER_ID: FakeCluster(id=OCCUPANCY_SENSING_CLUSTER_ID)},
+    )
+    endpoint_two = FakeEndpoint(
+        endpoint_id=2,
+        name="Occupancy Two",
+        device_types=[OccupancySensor],
+        clusters={OCCUPANCY_SENSING_CLUSTER_ID: FakeCluster(id=OCCUPANCY_SENSING_CLUSTER_ID)},
+    )
+    node = FakeNode(node_id=3, name="G410", endpoints={1: endpoint_one, 2: endpoint_two})
+    status, candidate, ranked = resolve_candidate(iter_candidates(FakeMatterClient([node])))
+
+    assert status == "ready"
+    assert candidate is not None
+    assert candidate.endpoint_id == 2
+    assert ranked[0].endpoint_id == 2
+
+
+def test_ranked_candidates_can_still_be_ambiguous_on_score() -> None:
+    """The config flow should still surface ambiguity for equal-score candidates."""
+
+    endpoint_one = FakeEndpoint(
+        endpoint_id=1,
+        name="Occupancy One",
+        device_types=[OccupancySensor],
+        clusters={OCCUPANCY_SENSING_CLUSTER_ID: FakeCluster(id=OCCUPANCY_SENSING_CLUSTER_ID)},
+    )
+    endpoint_two = FakeEndpoint(
+        endpoint_id=2,
+        name="Occupancy Two",
+        device_types=[OccupancySensor],
+        clusters={OCCUPANCY_SENSING_CLUSTER_ID: FakeCluster(id=OCCUPANCY_SENSING_CLUSTER_ID)},
+    )
+    node_a = FakeNode(node_id=3, name="G410", endpoints={1: endpoint_one})
+    node_b = FakeNode(node_id=17, name="Other", endpoints={2: endpoint_two})
+    candidates = iter_candidates(FakeMatterClient([node_a, node_b]))
+
+    status, candidate, ranked = resolve_candidate(candidates)
+
+    assert status == "ready"
+    assert candidate is not None
+    assert ranked[0].score == ranked[1].score
+
+
+def test_resolve_candidate_accepts_manual_override() -> None:
+    """Manual override should resolve an otherwise non-default endpoint."""
+
+    endpoint_one = FakeEndpoint(
+        endpoint_id=1,
+        name="Occupancy One",
+        device_types=[OccupancySensor],
+        clusters={OCCUPANCY_SENSING_CLUSTER_ID: FakeCluster(id=OCCUPANCY_SENSING_CLUSTER_ID)},
+    )
+    endpoint_two = FakeEndpoint(
+        endpoint_id=2,
+        name="Occupancy Two",
+        device_types=[OccupancySensor],
+        clusters={OCCUPANCY_SENSING_CLUSTER_ID: FakeCluster(id=OCCUPANCY_SENSING_CLUSTER_ID)},
+    )
+    node = FakeNode(node_id=3, name="G410", endpoints={1: endpoint_one, 2: endpoint_two})
+    candidates = iter_candidates(FakeMatterClient([node]))
+
+    status, candidate, _ = resolve_candidate(
+        candidates,
+        preferred_node_id=3,
+        preferred_endpoint_id=1,
+    )
+
+    assert status == "ready"
+    assert candidate is not None
+    assert candidate.endpoint_id == 1

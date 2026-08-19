@@ -1,4 +1,4 @@
-"""Data models for the G410 Doorbell Event integration."""
+"""Data models for the G410 Ring Event integration."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Pure discovery helpers for the G410 Doorbell Event integration."""
+"""Pure discovery helpers for the G410 Ring Event integration."""
 
 from __future__ import annotations
 
@@ -194,3 +194,50 @@ def summarize_candidate(candidate: DoorbellCandidate) -> str:
         endpoint_part += f" ({candidate.endpoint_name})"
     reasons = ", ".join(candidate.reasons) if candidate.reasons else "no extra hints"
     return f"{node_part}, {endpoint_part}, score={candidate.score}, reasons={reasons}"
+
+
+def rank_candidates(candidates: list[DoorbellCandidate]) -> list[DoorbellCandidate]:
+    """Return candidates ordered from most to least likely."""
+
+    return sorted(
+        candidates,
+        key=lambda item: (
+            item.score,
+            1 if item.endpoint_id == 2 else 0,
+            -item.endpoint_id,
+            -item.node_id,
+        ),
+        reverse=True,
+    )
+
+
+def resolve_candidate(
+    candidates: list[DoorbellCandidate],
+    preferred_node_id: int | None = None,
+    preferred_endpoint_id: int | None = None,
+) -> tuple[str, DoorbellCandidate | None, list[DoorbellCandidate]]:
+    """Resolve one candidate from the list."""
+
+    ranked = rank_candidates(candidates)
+    if not ranked:
+        return "missing", None, []
+
+    if preferred_node_id is not None and preferred_endpoint_id is not None:
+        for candidate in ranked:
+            if (
+                candidate.node_id == preferred_node_id
+                and candidate.endpoint_id == preferred_endpoint_id
+            ):
+                return "ready", candidate, ranked
+        return "invalid_override", None, ranked
+
+    best_score = ranked[0].score
+    best_candidates = [item for item in ranked if item.score == best_score]
+    if len(best_candidates) == 1:
+        return "ready", best_candidates[0], ranked
+
+    endpoint_two_candidates = [item for item in best_candidates if item.endpoint_id == 2]
+    if len(endpoint_two_candidates) == 1:
+        return "ready", endpoint_two_candidates[0], ranked
+
+    return "ambiguous", None, ranked

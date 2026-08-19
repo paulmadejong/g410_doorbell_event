@@ -10,13 +10,17 @@ from homeassistant.components.event import (
     EventDeviceClass,
     EventEntity,
 )
-from homeassistant.components.matter.helpers import get_node_device_identifier
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, NAME
+
+try:
+    from homeassistant.components.matter.helpers import get_node_device_identifier
+except ImportError:  # pragma: no cover - depends on HA version
+    get_node_device_identifier = None
 
 
 async def async_setup_entry(
@@ -51,7 +55,11 @@ class G410DoorbellRingEventEntity(EventEntity):
         candidate = self._monitor.state.candidate
         server_info = getattr(self._monitor.matter_client, "server_info", None)
 
-        if candidate is not None and server_info is not None:
+        if (
+            candidate is not None
+            and server_info is not None
+            and get_node_device_identifier is not None
+        ):
             return DeviceInfo(
                 identifiers={get_node_device_identifier(server_info, candidate.node_id)}
             )
@@ -60,7 +68,7 @@ class G410DoorbellRingEventEntity(EventEntity):
             identifiers={(DOMAIN, DOMAIN)},
             manufacturer="Aqara",
             model="G410",
-            name="Aqara G410",
+            name="Aqara G410 ring",
         )
 
     async def async_added_to_hass(self) -> None:

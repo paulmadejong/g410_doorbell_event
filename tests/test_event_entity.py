@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from types import SimpleNamespace
 
+import custom_components.g410_doorbell_event.event as event_module
 from custom_components.g410_doorbell_event.event import G410DoorbellRingEventEntity
 from custom_components.g410_doorbell_event.models import DoorbellCandidate, MonitorState
 
@@ -49,6 +50,21 @@ def test_event_entity_links_to_matter_device_identifier() -> None:
 
     assert entity._attr_device_info["identifiers"] == {
         ("matter", "deviceid_000000000000134B-0000000000000003-MatterNodeDevice")
+    }
+
+
+def test_event_entity_falls_back_without_helper() -> None:
+    """Older HA versions without the Matter helper should still work."""
+
+    original_helper = event_module.get_node_device_identifier
+    event_module.get_node_device_identifier = None
+    try:
+        entity = G410DoorbellRingEventEntity(FakeMonitor())
+    finally:
+        event_module.get_node_device_identifier = original_helper
+
+    assert entity._attr_device_info["identifiers"] == {
+        ("g410_doorbell_event", "g410_doorbell_event")
     }
 
 

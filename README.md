@@ -1,4 +1,4 @@
-# G410 Doorbell Event 0.1.0
+# G410 Ring Event 0.1.0
 
 This is a Home Assistant custom integration for the Aqara G410 Matter doorbell.
 
@@ -57,7 +57,7 @@ If the badge is not visible in your editor or local preview, use this same link 
 
 1. Open the HACS custom repository dialog with the button above.
 2. Add this repository as an `Integration`.
-3. Install `G410 Doorbell Event` from HACS.
+3. Install `G410 Ring Event` from HACS.
 4. Restart Home Assistant.
 5. Add the integration from Settings -> Devices & services.
 6. Keep the built-in Matter integration installed and loaded. This component depends on it.
@@ -142,6 +142,6 @@ mode: single
 - Technically, the trigger source is `occupancyChanged` with `occupied: true`.
 - If one clear candidate is found, the integration uses it automatically.
 - If no Occupancy Sensing endpoint is found, the integration logs a warning and stays inactive.
-- If multiple candidates tie for the best match, the integration logs an error and refuses to guess.
+- If multiple candidates tie for the best match, the setup flow shows the found candidates and lets you choose the correct node and endpoint manually.
 
 Version is intentionally fixed at `0.1.0` so you can start your Git repository from that baseline later.

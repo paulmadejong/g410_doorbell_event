@@ -11,8 +11,18 @@ from homeassistant.components.matter.helpers import get_matter
 from homeassistant.core import HomeAssistant
 from matter_server.common.models import EventType, MatterNodeEvent
 
-from .const import DOMAIN, ENTITY_RING, EVENT_DOORBELL, OCCUPANCY_SENSING_CLUSTER_ID
-from .discovery import extract_occupied_flag, iter_candidates, summarize_candidate
+from .const import (
+    DOMAIN,
+    ENTITY_RING,
+    EVENT_DOORBELL,
+    OCCUPANCY_SENSING_CLUSTER_ID,
+)
+from .discovery import (
+    extract_occupied_flag,
+    iter_candidates,
+    resolve_candidate,
+    summarize_candidate,
+)
 from .models import DoorbellListener, MonitorState
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,9 +35,16 @@ class DoorbellMonitor:
     matter_client: Any
     state: MonitorState
 
-    def __init__(self, hass: HomeAssistant) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        preferred_node_id: int | None = None,
+        preferred_endpoint_id: int | None = None,
+    ) -> None:
         self.hass = hass
         self.matter_client = get_matter(hass).matter_client
+        self.preferred_node_id = preferred_node_id
+        self.preferred_endpoint_id = preferred_endpoint_id
         self.state = MonitorState()
         self._listeners: list[DoorbellListener] = []
         self._unsubscribers: list[Callable[[], None]] = []
@@ -79,8 +96,13 @@ class DoorbellMonitor:
 
         async with self._rescan_lock:
             candidates = iter_candidates(self.matter_client)
+            status, candidate, ranked = resolve_candidate(
+                candidates,
+                preferred_node_id=self.preferred_node_id,
+                preferred_endpoint_id=self.preferred_endpoint_id,
+            )
 
-            if not candidates:
+            if status == "missing":
                 self.state.candidate = None
                 self.state.status = "missing"
                 self.state.detail = (
@@ -89,28 +111,34 @@ class DoorbellMonitor:
                 _LOGGER.warning("%s", self.state.detail)
                 return
 
-            candidates.sort(
-                key=lambda item: (item.score, item.node_id, item.endpoint_id),
-                reverse=True,
-            )
-            best_score = candidates[0].score
-            best_candidates = [item for item in candidates if item.score == best_score]
-
-            if len(best_candidates) != 1:
+            if status == "invalid_override":
                 self.state.candidate = None
-                self.state.status = "ambiguous"
+                self.state.status = "invalid_override"
                 self.state.detail = (
-                    "Multiple Occupancy Sensing endpoints matched; "
-                    "refusing to guess the doorbell target."
+                    "Configured node/endpoint override does not match any available "
+                    "Occupancy Sensing endpoint."
                 )
                 _LOGGER.error(
                     "%s Candidates: %s",
                     self.state.detail,
-                    "; ".join(summarize_candidate(item) for item in candidates),
+                    "; ".join(summarize_candidate(item) for item in ranked),
                 )
                 return
 
-            candidate = best_candidates[0]
+            if status == "ambiguous" or candidate is None:
+                self.state.candidate = None
+                self.state.status = "ambiguous"
+                self.state.detail = (
+                    "Multiple Occupancy Sensing endpoints matched; "
+                    "manual endpoint selection is required."
+                )
+                _LOGGER.error(
+                    "%s Candidates: %s",
+                    self.state.detail,
+                    "; ".join(summarize_candidate(item) for item in ranked),
+                )
+                return
+
             previous = self.state.candidate
             self.state.candidate = candidate
             self.state.status = "ready"
