@@ -65,7 +65,7 @@ class G410DoorbellEventConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._candidates = rank_candidates(candidates)
         status, candidate, ranked = resolve_candidate(candidates)
         if self._has_ambiguity(self._candidates):
-            _LOGGER.error(
+            _LOGGER.warning(
                 "Ambiguous Matter candidates during config flow: %s",
                 "; ".join(summarize_candidate(item) for item in self._candidates),
             )
@@ -141,7 +141,7 @@ class G410DoorbellEventOptionsFlow(config_entries.OptionsFlow):
     """Allow changing the preferred Matter node/endpoint after setup."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
+        self._config_entry = config_entry
         self._candidates: list[DoorbellCandidate] = []
 
     async def async_step_init(
@@ -159,13 +159,13 @@ class G410DoorbellEventOptionsFlow(config_entries.OptionsFlow):
             _LOGGER.debug("Matter integration is not ready during options flow: %s", err)
             self._candidates = []
 
-        current_node_id = self.config_entry.options.get(
+        current_node_id = self._config_entry.options.get(
             CONF_NODE_ID,
-            self.config_entry.data.get(CONF_NODE_ID),
+            self._config_entry.data.get(CONF_NODE_ID),
         )
-        current_endpoint_id = self.config_entry.options.get(
+        current_endpoint_id = self._config_entry.options.get(
             CONF_ENDPOINT_ID,
-            self.config_entry.data.get(CONF_ENDPOINT_ID),
+            self._config_entry.data.get(CONF_ENDPOINT_ID),
         )
 
         if user_input is not None:
