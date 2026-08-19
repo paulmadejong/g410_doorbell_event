@@ -1,0 +1,13 @@
+{
+  "domain": "g410_doorbell_event",
+  "name": "G410 Doorbell Event",
+  "version": "0.1.0",
+  "documentation": "https://github.com/paulmadejong/g410_doorbell_event#readme",
+  "issue_tracker": "https://github.com/paulmadejong/g410_doorbell_event/issues",
+  "dependencies": ["matter"],
+  "codeowners": ["@paulmadejong"],
+  "config_flow": true,
+  "single_config_entry": true,
+  "integration_type": "device",
+  "iot_class": "local_push"
+}

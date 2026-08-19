@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "G410 Doorbell Event",
+        "description": "Auto-discovers the Aqara G410 endpoint from the existing Home Assistant Matter integration."
+      }
+    },
+    "abort": {
+      "already_configured": "Only one G410 Doorbell Event integration can be configured.",
+      "matter_not_ready": "The Home Assistant Matter integration is not ready yet.",
+      "no_candidates": "No Matter node with Occupancy Sensing support was found.",
+      "ambiguous_candidates": "More than one candidate Occupancy Sensing endpoint was found."
+    }
+  },
+  "entity": {
+    "event": {
+      "ring": {
+        "name": "Ring"
+      }
+    }
+  }
+}

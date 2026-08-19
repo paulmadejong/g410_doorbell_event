@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "G410 Deurbel Event",
+        "description": "Detecteert automatisch het Aqara G410-endpoint via de bestaande Home Assistant Matter-integratie."
+      }
+    },
+    "abort": {
+      "already_configured": "Er kan maar een G410 Deurbel Event-integratie worden ingesteld.",
+      "matter_not_ready": "De Home Assistant Matter-integratie is nog niet klaar.",
+      "no_candidates": "Er is geen Matter-node met ondersteuning voor Occupancy Sensing gevonden.",
+      "ambiguous_candidates": "Er zijn meerdere mogelijke Occupancy Sensing-endpoints gevonden."
+    }
+  },
+  "entity": {
+    "event": {
+      "ring": {
+        "name": "Aanbellen"
+      }
+    }
+  }
+}
