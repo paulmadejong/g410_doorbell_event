@@ -23,6 +23,7 @@ event = _ensure_module("homeassistant.components.event")
 matter = _ensure_module("homeassistant.components.matter")
 matter_helpers = _ensure_module("homeassistant.components.matter.helpers")
 core = _ensure_module("homeassistant.core")
+data_entry_flow = _ensure_module("homeassistant.data_entry_flow")
 exceptions = _ensure_module("homeassistant.exceptions")
 helpers = _ensure_module("homeassistant.helpers")
 helpers_entity = _ensure_module("homeassistant.helpers.entity")
@@ -37,6 +38,7 @@ matter_server_models = _ensure_module("matter_server.common.models")
 homeassistant.config_entries = config_entries
 homeassistant.components = components
 homeassistant.core = core
+homeassistant.data_entry_flow = data_entry_flow
 homeassistant.exceptions = exceptions
 components.matter = matter
 components.event = event
@@ -52,6 +54,17 @@ matter_server_common.models = matter_server_models
 
 class ConfigEntry:  # noqa: D101
     pass
+
+
+class ConfigFlow:  # noqa: D101
+    def __init_subclass__(cls, **kwargs):
+        return super().__init_subclass__()
+
+
+class OptionsFlow:  # noqa: D101
+    @property
+    def config_entry(self):
+        return None
 
 
 class HomeAssistant:  # noqa: D101
@@ -87,8 +100,11 @@ class EventDeviceClass:  # noqa: D101
 
 
 config_entries.ConfigEntry = ConfigEntry
+config_entries.ConfigFlow = ConfigFlow
+config_entries.OptionsFlow = OptionsFlow
 core.HomeAssistant = HomeAssistant
 core.callback = lambda func: func
+data_entry_flow.FlowResult = dict
 exceptions.ConfigEntryNotReady = ConfigEntryNotReady
 event.EventEntity = EventEntity
 event.DoorbellEventType = DoorbellEventType
