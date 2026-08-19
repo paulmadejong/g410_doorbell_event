@@ -1,4 +1,4 @@
-# G410 Ring Event 0.1.0
+# Aqara G410 Ring Event 0.1.0
 
 This is a Home Assistant custom integration for the Aqara G410 Matter doorbell.
 
@@ -134,7 +134,7 @@ If the badge is not visible in your editor or local preview, use this same link 
 
 1. Open the HACS custom repository dialog with the button above.
 2. Add this repository as an `Integration`.
-3. Install `G410 Ring Event` from HACS.
+3. Install `Aqara G410 Ring Event` from HACS.
 4. Restart Home Assistant.
 5. Add the integration from Settings -> Devices & services.
 6. Keep the built-in Matter integration installed and loaded. This component depends on it.
@@ -149,8 +149,6 @@ Manual fallback:
 ## HACS
 
 This repository is structured for HACS as a custom integration repository.
-
-The button above will work after you publish this repository on GitHub and replace the placeholder owner in the URL.
 
 For a public HACS repository you still need:
 
@@ -185,7 +183,7 @@ alias: G410 doorbell ring
 triggers:
   - trigger: event.received
     target:
-      entity_id: event.g410_doorbell_event
+      entity_id: event.your_g410_ring_event_entity
     options:
       event_type:
         - ring
@@ -196,6 +194,8 @@ actions:
       message: Aqara G410 doorbell rang.
 mode: single
 ```
+
+Replace `event.your_g410_ring_event_entity` with the actual event entity created in your Home Assistant instance.
 
 Compatibility fallback, using the preferred custom bus event alias:
 
