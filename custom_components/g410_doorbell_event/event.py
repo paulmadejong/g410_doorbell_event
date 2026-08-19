@@ -68,7 +68,7 @@ class G410DoorbellRingEventEntity(EventEntity):
             identifiers={(DOMAIN, DOMAIN)},
             manufacturer="Aqara",
             model="G410",
-            name="Aqara G410 ring",
+            name="Aqara G410 ring event",
         )
 
     async def async_added_to_hass(self) -> None:

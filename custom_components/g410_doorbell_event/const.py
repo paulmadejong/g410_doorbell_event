@@ -1,7 +1,7 @@
 """Constants for the G410 Ring Event integration."""
 
 DOMAIN = "g410_doorbell_event"
-NAME = "G410 Ring Event"
+NAME = "Aqara G410 Ring Event"
 VERSION = "0.1.0"
 
 CONF_NODE_ID = "node_id"

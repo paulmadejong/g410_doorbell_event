@@ -218,8 +218,7 @@ class DoorbellMonitor:
                 return
 
             self.state.last_occupied = True
-
-        if self.state.last_occupied is True:
+        elif self.state.last_occupied is True:
             _LOGGER.debug(
                 "Ignoring repeated occupied=true event for node=%s endpoint=%s payload=%s",
                 data.node_id,
