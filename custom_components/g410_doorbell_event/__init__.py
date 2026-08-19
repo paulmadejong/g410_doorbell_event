@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv
 
 from .const import CONF_ENDPOINT_ID, CONF_NODE_ID, DOMAIN
 from .monitor import DoorbellMonitor
@@ -15,6 +16,7 @@ from .monitor import DoorbellMonitor
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[str] = ["event"]
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 @dataclass(slots=True)

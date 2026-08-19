@@ -26,6 +26,7 @@ core = _ensure_module("homeassistant.core")
 data_entry_flow = _ensure_module("homeassistant.data_entry_flow")
 exceptions = _ensure_module("homeassistant.exceptions")
 helpers = _ensure_module("homeassistant.helpers")
+helpers_config_validation = _ensure_module("homeassistant.helpers.config_validation")
 helpers_entity = _ensure_module("homeassistant.helpers.entity")
 helpers_entity_platform = _ensure_module("homeassistant.helpers.entity_platform")
 ha_const = _ensure_module("homeassistant.const")
@@ -44,6 +45,7 @@ components.matter = matter
 components.event = event
 matter.helpers = matter_helpers
 homeassistant.helpers = helpers
+helpers.config_validation = helpers_config_validation
 helpers.entity = helpers_entity
 helpers.entity_platform = helpers_entity_platform
 homeassistant.const = ha_const
@@ -111,6 +113,7 @@ event.DoorbellEventType = DoorbellEventType
 event.EventDeviceClass = EventDeviceClass
 helpers_entity.DeviceInfo = DeviceInfo
 helpers_entity_platform.AddEntitiesCallback = AddEntitiesCallback
+helpers_config_validation.config_entry_only_config_schema = lambda _domain: object()
 
 
 def get_matter(_: HomeAssistant):  # noqa: D401

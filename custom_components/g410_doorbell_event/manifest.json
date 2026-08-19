@@ -1,13 +1,13 @@
 {
   "domain": "g410_doorbell_event",
   "name": "Aqara G410 Ring Event",
-  "version": "0.1.0",
-  "documentation": "https://github.com/paulmadejong/g410_doorbell_event#readme",
-  "issue_tracker": "https://github.com/paulmadejong/g410_doorbell_event/issues",
-  "dependencies": ["matter"],
   "codeowners": ["@paulmadejong"],
   "config_flow": true,
-  "single_config_entry": true,
+  "dependencies": ["matter"],
+  "documentation": "https://github.com/paulmadejong/g410_doorbell_event#readme",
   "integration_type": "device",
-  "iot_class": "local_push"
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/paulmadejong/g410_doorbell_event/issues",
+  "single_config_entry": true,
+  "version": "0.1.0"
 }
