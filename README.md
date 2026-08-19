@@ -28,6 +28,7 @@ Practical problem this component is trying to solve:
 - Aqara's Matter signal for the G410 ring currently behaves like a very short occupancy-style pulse.
 - Depending on how you automate against that signal, those short pulses can be awkward to catch reliably or can lead to inconsistent behavior.
 - This integration normalizes that behavior into a proper Home Assistant doorbell `ring` event surface and compatible custom bus events.
+- This integration is built around the standardized Home Assistant doorbell `ring` event support introduced in Home Assistant 2026.5.
 
 Observed behavior from real-world Matter logs:
 
