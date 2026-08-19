@@ -2,6 +2,52 @@
 
 This is a Home Assistant custom integration for the Aqara G410 Matter doorbell.
 
+## Why this exists
+
+Current Matter support for Aqara video doorbells in Home Assistant is still incomplete. In practice, users often end up with either:
+
+- too little exposed by the stock Matter integration,
+- Aqara-specific Matter signals that need manual setup first,
+- or short/brief occupancy-style ring pulses that are awkward to automate against directly.
+
+This integration exists to make the Aqara G410 usable as a reliable Home Assistant doorbell trigger by:
+
+- discovering the correct Aqara Matter signal endpoint automatically,
+- converting the Aqara occupancy-style ring signal into a proper Home Assistant `ring` event entity,
+- and exposing custom bus events for automation compatibility.
+
+Background and related issues:
+
+- Home Assistant core issue about limited G410 Matter exposure:
+  [home-assistant/core#153274](https://github.com/home-assistant/core/issues/153274)
+- Open Home Foundation roadmap item about making Matter video doorbells behave more like established HA camera/doorbell integrations:
+  [OpenHomeFoundation/roadmap#84](https://github.com/OpenHomeFoundation/roadmap/issues/84)
+
+Practical problem this component is trying to solve:
+
+- Aqara's Matter signal for the G410 ring currently behaves like a very short occupancy-style pulse.
+- Depending on how you automate against that signal, those short pulses can be awkward to catch reliably or can lead to inconsistent behavior.
+- This integration normalizes that behavior into a proper Home Assistant doorbell `ring` event surface and compatible custom bus events.
+
+Observed behavior from real-world Matter logs:
+
+- the ring signal is exposed as `occupancySensing.occupancyChanged`
+- it appears as a short `occupied: true` pulse followed by `occupied: false`
+- the pulse duration is not stable
+- in testing, pulses ranged from extremely short bursts in the single-digit millisecond range up to multi-second pulses
+
+Anonymized examples from real captures:
+
+```text
+occupied: true  -> occupied: false after ~9 ms
+occupied: true  -> occupied: false after ~593 ms
+occupied: true  -> occupied: false after ~986 ms
+occupied: true  -> occupied: false after ~1001 ms
+occupied: true  -> occupied: false after ~3642 ms
+```
+
+That variability is exactly why this integration does not rely on a plain exposed binary-style occupancy state alone. Instead, it listens directly to the raw Matter node events and translates those pulses into a clearer Home Assistant doorbell event model.
+
 HACS files included in this repository:
 
 - `hacs.json` in the repository root
@@ -25,6 +71,35 @@ What it does:
 - Exposes a Home Assistant doorbell event entity with the standard event type `ring`.
 - Fires `g410_doorbell_event` for backward compatibility.
 - Fires `aqara_g410_ring` as the clearer custom bus event alias.
+
+## Aqara setup required
+
+Before this integration can work, the Aqara G410 must actually publish the relevant Aqara Matter signal into Matter.
+
+In the Aqara app this is done through the experimental Matter signal sync feature.
+
+Reference:
+
+- Aqara forum post describing the G410 third-party Matter signal workflow:
+  [Integrating the Aqara G410 Doorbell with Third-Party Platforms: Home Assistant and Homey Pro](https://forum.aqara.com/t/integrating-the-aqara-g410-doorbell-with-third-party-platforms-home-assistant-and-homey-pro/247856)
+
+### Enable Aqara Matter Signal Management
+
+In the Aqara Home app:
+
+1. Open `Profile`.
+2. Open `Connect to ecosystems`.
+3. Open `Matter`.
+4. Open `Scene and Signal Synchronization` (experimental).
+5. Open `Signal Management`.
+6. Use the add button to create a new signal.
+7. Choose the doorbell ring condition, for example when someone rings the doorbell.
+8. Give the signal a clear name, for example `Doorbell` or `Aangebeld`.
+9. Save the signal.
+
+After that, Home Assistant Matter should receive the Aqara-generated Matter signal, typically as an occupancy-style signal endpoint that this custom integration can discover and translate into a proper ring event.
+
+If you skip this Aqara-side step, this integration usually has nothing useful to detect.
 
 Event fired:
 
