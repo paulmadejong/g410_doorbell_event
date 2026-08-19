@@ -27,6 +27,7 @@ class MonitorState:
     status: str = "unknown"
     detail: str = ""
     last_occupied: bool | None = None
+    armed_at_monotonic: float | None = None
 
 
 DoorbellListener = Callable[[dict[str, Any]], None]

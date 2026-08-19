@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -15,6 +16,7 @@ from .const import (
     DOMAIN,
     ENTITY_RING,
     EVENT_DOORBELL,
+    INITIAL_OCCUPIED_SUPPRESSION_SECONDS,
     OCCUPANCY_SENSING_CLUSTER_ID,
 )
 from .discovery import (
@@ -109,6 +111,7 @@ class DoorbellMonitor:
                     "No available Matter node with Occupancy Sensing support was found."
                 )
                 self.state.last_occupied = None
+                self.state.armed_at_monotonic = None
                 _LOGGER.warning("%s", self.state.detail)
                 return
 
@@ -120,6 +123,7 @@ class DoorbellMonitor:
                     "Occupancy Sensing endpoint."
                 )
                 self.state.last_occupied = None
+                self.state.armed_at_monotonic = None
                 _LOGGER.error(
                     "%s Candidates: %s",
                     self.state.detail,
@@ -135,6 +139,7 @@ class DoorbellMonitor:
                     "manual endpoint selection is required."
                 )
                 self.state.last_occupied = None
+                self.state.armed_at_monotonic = None
                 _LOGGER.error(
                     "%s Candidates: %s",
                     self.state.detail,
@@ -149,6 +154,7 @@ class DoorbellMonitor:
 
             if previous != candidate:
                 self.state.last_occupied = None
+                self.state.armed_at_monotonic = time.monotonic()
                 _LOGGER.info(
                     "Resolved Aqara G410 Matter endpoint after %s: %s",
                     reason,
@@ -195,14 +201,23 @@ class DoorbellMonitor:
             return
 
         if self.state.last_occupied is None:
+            now_monotonic = time.monotonic()
+            armed_at = self.state.armed_at_monotonic
+            if (
+                armed_at is not None
+                and now_monotonic - armed_at < INITIAL_OCCUPIED_SUPPRESSION_SECONDS
+            ):
+                self.state.last_occupied = True
+                _LOGGER.debug(
+                    "Ignoring initial occupied=true event for node=%s endpoint=%s during "
+                    "the %.1fs startup suppression window",
+                    data.node_id,
+                    data.endpoint_id,
+                    INITIAL_OCCUPIED_SUPPRESSION_SECONDS,
+                )
+                return
+
             self.state.last_occupied = True
-            _LOGGER.debug(
-                "Ignoring initial occupied=true event for node=%s endpoint=%s until a "
-                "clear false->true transition is observed",
-                data.node_id,
-                data.endpoint_id,
-            )
-            return
 
         if self.state.last_occupied is True:
             _LOGGER.debug(
