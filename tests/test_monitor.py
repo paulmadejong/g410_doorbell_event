@@ -100,6 +100,7 @@ def test_monitor_allows_first_true_after_startup_window() -> None:
         monitor._handle_node_event("node_event", true_data)
 
     assert len(listener_calls) == 1
+    assert [event[0] for event in bus_events] == ["g410_doorbell_event", "aqara_g410_ring"]
     assert bus_events[0][1]["raw_data"] == {"occupancy": {"occupied": True}}
 
 
@@ -142,7 +143,7 @@ def test_monitor_allows_false_to_true_transition() -> None:
 
     assert len(listener_calls) == 1
     assert listener_calls[0]["event_type"] == "ring"
-    assert bus_events[0][0] == "g410_doorbell_event"
+    assert [event[0] for event in bus_events] == ["g410_doorbell_event", "aqara_g410_ring"]
     assert bus_events[0][1]["raw_data"] == {"occupancy": {"occupied": True}}
 
 
@@ -210,4 +211,4 @@ def test_monitor_ignores_repeated_true_without_new_false_transition() -> None:
         monitor._handle_node_event("node_event", true_data)
 
     assert len(listener_calls) == 1
-    assert len(bus_events) == 1
+    assert len(bus_events) == 2

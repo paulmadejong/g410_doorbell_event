@@ -16,6 +16,7 @@ from .const import (
     DOMAIN,
     ENTITY_RING,
     EVENT_DOORBELL,
+    EVENT_RING,
     INITIAL_OCCUPIED_SUPPRESSION_SECONDS,
     OCCUPANCY_SENSING_CLUSTER_ID,
 )
@@ -290,3 +291,9 @@ class DoorbellMonitor:
                 _LOGGER.exception("Ring listener callback failed")
 
         self.hass.bus.async_fire(EVENT_DOORBELL, event_payload)
+        self.hass.bus.async_fire(EVENT_RING, event_payload)
+        _LOGGER.info(
+            "Fired legacy bus events: %s and %s",
+            EVENT_DOORBELL,
+            EVENT_RING,
+        )

@@ -23,12 +23,14 @@ What it does:
 - Listens to raw Matter `NODE_EVENT` messages.
 - Treats `occupancyChanged` with `occupied: true` as the doorbell ring signal.
 - Exposes a Home Assistant doorbell event entity with the standard event type `ring`.
-- Keeps the legacy `g410_doorbell_event` bus event for backward compatibility.
+- Fires `g410_doorbell_event` for backward compatibility.
+- Fires `aqara_g410_ring` as the clearer custom bus event alias.
 
 Event fired:
 
 - Standard Home Assistant event entity type: `ring`
 - Legacy Home Assistant bus event: `g410_doorbell_event`
+- Preferred custom Home Assistant bus event alias: `aqara_g410_ring`
 
 In other words: this integration emits the standard doorbell `ring` event through a Home Assistant `event` entity, even though the underlying Matter signal currently comes from `OccupancySensing.occupancyChanged`.
 
@@ -120,7 +122,22 @@ actions:
 mode: single
 ```
 
-Compatibility fallback, using the legacy bus event:
+Compatibility fallback, using the preferred custom bus event alias:
+
+```yaml
+alias: G410 doorbell ring alias
+triggers:
+  - trigger: event
+    event_type: aqara_g410_ring
+actions:
+  - action: notify.mobile_app_iphone
+    data:
+      title: Doorbell
+      message: Aqara G410 doorbell rang.
+mode: single
+```
+
+Legacy compatibility fallback:
 
 ```yaml
 alias: G410 doorbell pressed
@@ -138,6 +155,7 @@ mode: single
 ## Behavior
 
 - The primary Home Assistant surface is a doorbell `event` entity with standard event type `ring`.
+- The preferred custom bus event alias is `aqara_g410_ring`.
 - The legacy `g410_doorbell_event` bus event remains available for backward compatibility.
 - Technically, the trigger source is `occupancyChanged` with `occupied: true`.
 - If one clear candidate is found, the integration uses it automatically.
