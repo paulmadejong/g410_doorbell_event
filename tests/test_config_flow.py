@@ -8,7 +8,9 @@ from unittest.mock import MagicMock
 
 sys.modules.setdefault("voluptuous", MagicMock())
 
-from custom_components.g410_doorbell_event.config_flow import G410DoorbellEventOptionsFlow
+from custom_components.g410_doorbell_event.config_flow import (  # noqa: E402
+    G410DoorbellEventOptionsFlow,
+)
 
 
 def test_options_flow_accepts_config_entry_without_setting_base_property() -> None:
