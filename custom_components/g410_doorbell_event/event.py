@@ -71,6 +71,16 @@ class G410DoorbellRingEventEntity(EventEntity):
             name="Aqara G410 ring event",
         )
 
+    async def async_get_last_state(self) -> None:
+        """Do not restore a past ring as a new event when Home Assistant starts."""
+
+        return None
+
+    async def async_get_last_extra_data(self) -> None:
+        """Do not restore payload data for an event from a previous run."""
+
+        return None
+
     async def async_added_to_hass(self) -> None:
         """Register ring callbacks."""
 
