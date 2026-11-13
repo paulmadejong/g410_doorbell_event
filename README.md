@@ -238,4 +238,4 @@ mode: single
 - If no Occupancy Sensing endpoint is found, the integration logs a warning and stays inactive.
 - If multiple candidates tie for the best match, the setup flow shows the found candidates and lets you choose the correct node and endpoint manually.
 
-Version is intentionally fixed at `0.1.0` so you can start your Git repository from that baseline later.
+Current release version: `0.1.1`.

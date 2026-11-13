@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 from types import SimpleNamespace
 
@@ -79,3 +80,12 @@ def test_event_entity_triggers_standard_ring_event() -> None:
     entity._handle_ring_event({"event_type": "ring", "node_id": 3})
 
     assert captured == [("ring", {"event_type": "ring", "node_id": 3})]
+
+
+def test_event_entity_does_not_restore_a_previous_ring() -> None:
+    """A prior ring must not be republished as a startup event."""
+
+    entity = G410DoorbellRingEventEntity(FakeMonitor())
+
+    assert asyncio.run(entity.async_get_last_state()) is None
+    assert asyncio.run(entity.async_get_last_extra_data()) is None
