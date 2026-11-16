@@ -1,6 +1,7 @@
 {
   "domain": "g410_doorbell_event",
   "name": "Aqara G410 Ring Event",
+  "categories": ["security_safety.doorbells_intercoms"],
   "codeowners": ["@paulmadejong"],
   "config_flow": true,
   "dependencies": ["matter"],
@@ -9,5 +10,5 @@
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/paulmadejong/g410_doorbell_event/issues",
   "single_config_entry": true,
-  "version": "0.1.1"
+  "version": "0.1.2"
 }

@@ -1,4 +1,4 @@
-# Aqara G410 Ring Event 0.1.0
+# Aqara G410 Ring Event 0.1.2
 
 This is a Home Assistant custom integration for the Aqara G410 Matter doorbell.
 
@@ -49,18 +49,13 @@ occupied: true  -> occupied: false after ~3642 ms
 
 That variability is exactly why this integration does not rely on a plain exposed binary-style occupancy state alone. Instead, it listens directly to the raw Matter node events and translates those pulses into a clearer Home Assistant doorbell event model.
 
-HACS files included in this repository:
+Marketplace and HACS publication files included in this repository:
 
-- `hacs.json` in the repository root
-- `brand/icon.png`
-- `LICENSE`
-- `pyproject.toml`
-- `.github/workflows/`
+- `hacs.json` in the repository root. The Marketplace still reads this file; its name has not changed.
+- `custom_components/g410_doorbell_event/brand/icon.png` and `logo.png` for the integration branding.
+- GitHub Actions for HACS validation, hassfest, tests, and linting.
 
-Repository notes for HACS publication:
-
-- Set the GitHub repository description and topics.
-- Add the repository to Home Assistant brands if you want it listed as a polished public integration.
+This repository can be installed from a link as a custom repository. It is not yet in the shared Marketplace catalog. Catalog inclusion requires a separate pull request to [`hacs/default`](https://github.com/hacs/default); see [Marketplace catalog publication](#marketplace-catalog-publication) below.
 
 What it does:
 
@@ -125,39 +120,50 @@ Event payload:
 
 ## Installation
 
-Preferred install path: HACS custom repository.
+The repository can be installed as a custom repository before it is added to the shared catalog.
 
-[![Open your Home Assistant instance and open the custom repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=paulmadejong&repository=g410_doorbell_event&category=integration)
+[![Open this repository in Home Assistant Marketplace or HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=paulmadejong&repository=g410_doorbell_event&category=integration)
 
-If the badge is not visible in your editor or local preview, use this same link directly:
+This link opens the Home Assistant Marketplace on Home Assistant 2026.11 and newer, and HACS on older versions. The `hacs_repository` link format remains compatible with both.
 
-`https://my.home-assistant.io/redirect/hacs_repository/?owner=paulmadejong&repository=g410_doorbell_event&category=integration`
+### Home Assistant 2026.11 and newer
 
-1. Open the HACS custom repository dialog with the button above.
-2. Add this repository as an `Integration`.
-3. Install `Aqara G410 Ring Event` from HACS.
-4. Restart Home Assistant.
-5. Add the integration from Settings -> Devices & services.
-6. Keep the built-in Matter integration installed and loaded. This component depends on it.
+1. Open **Settings > Marketplace**.
+2. Select **Add from link** and add `https://github.com/paulmadejong/g410_doorbell_event` as an integration repository.
+3. Install **Aqara G410 Ring Event**.
+4. Add the integration under **Settings > Devices & services** if it is not already configured.
+5. Keep the built-in Matter integration installed and loaded. This component depends on it.
 
-Manual fallback:
+If you installed this repository with HACS before upgrading to Home Assistant 2026.11, Home Assistant migrates the installation to Marketplace automatically.
+
+### Older Home Assistant versions with HACS
+
+1. Open the repository link above, or add `paulmadejong/g410_doorbell_event` in **HACS > Integrations > Custom repositories** with category **Integration**.
+2. Install **Aqara G410 Ring Event** from HACS.
+3. Add the integration under **Settings > Devices & services** if it is not already configured.
+4. Keep the built-in Matter integration installed and loaded. This component depends on it.
+
+### After an update
+
+Updating an already loaded custom integration requires a Home Assistant restart. Marketplace creates a repair with a restart button; with older HACS installations, restart Home Assistant after the update.
+
+### Manual installation
 
 1. Copy `custom_components/g410_doorbell_event/` into your Home Assistant `custom_components` directory.
 2. Restart Home Assistant.
-3. Add the integration from Settings -> Devices & services.
+3. Add the integration from **Settings > Devices & services**.
 4. Keep the built-in Matter integration installed and loaded. This component depends on it.
 
-## HACS
+## Marketplace catalog publication
 
-This repository is structured for HACS as a custom integration repository.
+The repository is currently installable by link, but is not listed in the shared catalog shown to everyone. To request catalog inclusion:
 
-For a public HACS repository you still need:
+1. Keep the GitHub repository public, with a description, topics, issues enabled, and this README.
+2. Make sure both the HACS validation action and hassfest action pass without ignored checks.
+3. Publish a full GitHub release whose tag matches the `version` in `manifest.json`. A Git tag by itself is not a release.
+4. Open a pull request to [`hacs/default`](https://github.com/hacs/default), adding `paulmadejong/g410_doorbell_event` to its `integration` list.
 
-1. A public GitHub repository.
-2. A repository description.
-3. Repository topics.
-4. A GitHub release for the version you want to publish.
-5. A brand icon in `brand/icon.png`.
+Only the repository owner or a major contributor can submit the catalog request. New catalog requests may take months to be reviewed. Until then, users can install the repository from the link above. The `hacs.json` filename and HACS validation action remain part of the Marketplace publication process.
 
 ## Development
 
@@ -238,4 +244,4 @@ mode: single
 - If no Occupancy Sensing endpoint is found, the integration logs a warning and stays inactive.
 - If multiple candidates tie for the best match, the setup flow shows the found candidates and lets you choose the correct node and endpoint manually.
 
-Current release version: `0.1.1`.
+Next release version: `0.1.2`.

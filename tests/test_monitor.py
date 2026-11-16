@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 from types import SimpleNamespace
 from unittest.mock import patch
+
+import pytest
+from matter_server.common.models import EventType
 
 from custom_components.g410_doorbell_event.models import DoorbellCandidate, MonitorState
 from custom_components.g410_doorbell_event.monitor import DoorbellMonitor
@@ -212,3 +216,31 @@ def test_monitor_ignores_repeated_true_without_new_false_transition() -> None:
 
     assert len(listener_calls) == 1
     assert len(bus_events) == 2
+
+
+
+def test_monitor_cleans_up_partial_subscriptions_when_start_fails() -> None:
+    """Subscriptions created before a startup failure should be removed."""
+
+    monitor, _ = _make_monitor()
+    registered_events: list[EventType] = []
+    unsubscribed_events: list[EventType] = []
+
+    def subscribe_events(_listener, event_type):
+        if event_type == EventType.NODE_UPDATED:
+            raise RuntimeError("Matter subscription failed")
+        registered_events.append(event_type)
+
+        def unsubscribe() -> None:
+            unsubscribed_events.append(event_type)
+
+        return unsubscribe
+
+    monitor.matter_client.subscribe_events = subscribe_events
+
+    with pytest.raises(RuntimeError, match="Matter subscription failed"):
+        asyncio.run(monitor.async_start())
+
+    assert registered_events == [EventType.NODE_EVENT, EventType.NODE_ADDED]
+    assert unsubscribed_events == [EventType.NODE_ADDED, EventType.NODE_EVENT]
+    assert monitor._unsubscribers == []

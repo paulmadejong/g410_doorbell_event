@@ -56,21 +56,25 @@ class DoorbellMonitor:
     async def async_start(self) -> None:
         """Set up subscriptions and resolve the active endpoint."""
 
-        self._unsubscribers.append(
-            self.matter_client.subscribe_events(self._handle_node_event, EventType.NODE_EVENT)
-        )
-        for event_type in (
-            EventType.NODE_ADDED,
-            EventType.NODE_UPDATED,
-            EventType.NODE_REMOVED,
-            EventType.ENDPOINT_ADDED,
-            EventType.ENDPOINT_REMOVED,
-        ):
+        try:
             self._unsubscribers.append(
-                self.matter_client.subscribe_events(self._handle_topology_event, event_type)
+                self.matter_client.subscribe_events(self._handle_node_event, EventType.NODE_EVENT)
             )
+            for event_type in (
+                EventType.NODE_ADDED,
+                EventType.NODE_UPDATED,
+                EventType.NODE_REMOVED,
+                EventType.ENDPOINT_ADDED,
+                EventType.ENDPOINT_REMOVED,
+            ):
+                self._unsubscribers.append(
+                    self.matter_client.subscribe_events(self._handle_topology_event, event_type)
+                )
 
-        await self.async_rescan("startup")
+            await self.async_rescan("startup")
+        except BaseException:
+            await self.async_stop()
+            raise
 
     async def async_stop(self) -> None:
         """Tear down all subscriptions."""
