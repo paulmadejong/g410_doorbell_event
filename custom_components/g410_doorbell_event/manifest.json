@@ -1,8 +1,8 @@
 {
   "domain": "g410_doorbell_event",
   "name": "Aqara G410 Ring Event",
-  "codeowners": ["@paulmadejong"],
   "categories": ["security_safety.doorbells_intercoms"],
+  "codeowners": ["@paulmadejong"],
   "config_flow": true,
   "dependencies": ["matter"],
   "documentation": "https://github.com/paulmadejong/g410_doorbell_event#readme",
