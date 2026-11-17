@@ -1,4 +1,4 @@
-# Aqara G410 Ring Event 0.1.2
+# Aqara G410 Ring Event
 
 This is a Home Assistant custom integration for the Aqara G410 Matter doorbell.
 
@@ -243,5 +243,3 @@ mode: single
 - If one clear candidate is found, the integration uses it automatically.
 - If no Occupancy Sensing endpoint is found, the integration logs a warning and stays inactive.
 - If multiple candidates tie for the best match, the setup flow shows the found candidates and lets you choose the correct node and endpoint manually.
-
-Next release version: `0.1.2`.
